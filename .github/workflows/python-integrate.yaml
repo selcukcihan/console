@@ -37,7 +37,7 @@ jobs:
         with:
           filters: |
             awsLambdaSdk:
-              - 'node/packages/aws-lambda-sdk/**'
+              - 'python/packages/aws-lambda-sdk/**'
             sdk:
               - 'python/packages/sdk/**'
             sdkSchema:
