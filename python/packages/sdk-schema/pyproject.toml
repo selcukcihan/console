@@ -11,7 +11,7 @@ requires = [
 
 [project]
 name = "selcuk_serverless_sdk_schema"
-version = "0.0.0"
+version = "0.0.1"
 description = "The protobuf generated Serverless SDK Schema"
 authors = [{ name = "selcuk_" }]
 requires-python = ">=3.7"
