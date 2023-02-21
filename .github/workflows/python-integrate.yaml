@@ -11,7 +11,7 @@ on:
 
 jobs:
   linuxPython39:
-    name: "[Linux] Python 3.9: Unit Tests"
+    name: "[Linux] Python 3.7: Unit Tests"
     runs-on: ubuntu-latest
     outputs:
       pathChangedSdk: ${{ steps.pathChanges.outputs.sdk}}
@@ -41,10 +41,10 @@ jobs:
             proto:
               - 'proto/**'
 
-      - name: Install Python 3.9
+      - name: Install Python 3.7
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.7'
 
           # ensure project dependencies are cached
           # When using only `pyproject.toml` for dependencies, see:
