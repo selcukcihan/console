@@ -28,7 +28,6 @@ jobs:
       - name: Install main project dependencies
         run: |
           cd python/packages/sdk-schema
-
           python3 -m pip install .
 
       - name: Buf Setup
@@ -46,7 +45,7 @@ jobs:
           buf build
           buf generate --template=buf.gen.python.yaml 
 
-          cd ./python/packages/sdk-schema
+          cd ../python/packages/sdk-schema
           python3 -m pip install --upgrade build twine wheel poethepoet
           python3 -m build --wheel --sdist .
           twine upload dist/*.tar.gz dist/*.whl
