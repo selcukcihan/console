@@ -82,7 +82,7 @@ jobs:
           VERSION=${TEMP_ARRAY[@]: -1}
           cd node
           ./scripts/publish-extension-layers.js \
-            --bucket-name sls-layers-registry \
+            --bucket-name selcuk-dev-layers-registry \
             --layer-basename sls-sdk-python \
             --version $VERSION \
             --layer-filename ../python/packages/extension.internal.zip
@@ -97,7 +97,7 @@ jobs:
           TAG=${GITHUB_REF:10}
           cd node
           ./scripts/publish-extension-layers.js \
-            --bucket-name sls-layers-registry \
+            --bucket-name selcuk-dev-layers-registry \
             --layer-basename sls-sdk-python \
             --version $VERSION \
             --layer-filename ../python/packages/extension.internal.zip \
