@@ -52,15 +52,8 @@ jobs:
           cache-dependency-path: |
             **/pyproject.toml
 
-      - name: Install SDK project and dependencies
-        if: steps.pathChanges.outputs.sdk == 'true'
-        run: |
-          cd python/packages/sdk
-
-          python3 -m pip install --editable .
-
       - name: Validate code formatting
-        if: steps.pathChanges.outputs.packages == 'true'
+        # if: steps.pathChanges.outputs.packages == 'true'
         run: |
           cd python/packages
 
@@ -68,7 +61,7 @@ jobs:
           python3 -m black --check .
 
       - name: Validate metadata formatting
-        if: steps.pathChanges.outputs.packages == 'true'
+        # if: steps.pathChanges.outputs.packages == 'true'
         run: |
           cd python/packages
           
@@ -81,7 +74,7 @@ jobs:
           done
 
       - name: Check code with linter
-        if: steps.pathChanges.outputs.packages == 'true'
+        # if: steps.pathChanges.outputs.packages == 'true'
         run: |
           cd python/packages
 
@@ -89,58 +82,70 @@ jobs:
           python3 -m ruff .
 
       - name: Run SDK unit tests
-        if: steps.pathChanges.outputs.sdk == 'true'
+        # if: steps.pathChanges.outputs.sdk == 'true'
         run: |
           cd python/packages/sdk
+          python3 -m venv .venv
+          source .venv/bin/activate
+
+          python3 -m pip install --editable .
 
           python3 -m pip install pytest
           python3 -m pytest
 
       - name: Install SDK Schema
-        if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
+        # if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
         run: |
           cd python/packages/sdk-schema
+          python3 -m venv .venv
+          source .venv/bin/activate
 
           python3 -m pip install poethepoet
           python3 -m poethepoet install
 
       - name: Buf Setup
-        if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
+        # if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
         uses: bufbuild/buf-setup-action@v1
         with:
           github_token: ${{ github.token }}
 
       - name: Buf Lint
-        if: steps.pathChanges.outputs.proto == 'true'
+        # if: steps.pathChanges.outputs.proto == 'true'
         uses: bufbuild/buf-lint-action@v1
         with:
           input: "proto"
           github_token: ${{ github.token }}
 
       - name: Build Protobufs
-        if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
+        # if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
         run: |
           cd ./proto
           python3 -m pip install "betterproto[compiler]"
-          buf generate --template=buf.gen.python.yaml 
+          buf generate --template=buf.gen.python.yaml
 
       - name: Run SDK Schema unit tests
-        if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
+        # if: steps.pathChanges.outputs.sdkSchema == 'true' || steps.pathChanges.outputs.proto == 'true'
         run: |
           cd python/packages/sdk-schema
+          source .venv/bin/activate
 
-          python3 -m pip install poethepoet pytest
+          python3 -m pip install pytest
           python3 -m poethepoet test
 
       - name: Install AWS Lambda SDK project and dependencies
-        if: steps.pathChanges.outputs.awsLambdaSdk == 'true'
+        # if: steps.pathChanges.outputs.awsLambdaSdk == 'true'
         run: |
           cd python/packages/aws-lambda-sdk
+          python3 -m venv .venv
+          source .venv/bin/activate
+
           python3 -m pip install .
 
       - name: Run AWS Lambda SDK unit tests
-        if: steps.pathChanges.outputs.awsLambdaSdk == 'true'
+        # if: steps.pathChanges.outputs.awsLambdaSdk == 'true'
         run: |
           cd python/packages/aws-lambda-sdk
+          source .venv/bin/activate
+
           python3 -m pip install pytest strenum
           python3 -m pytest
