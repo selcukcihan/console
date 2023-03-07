@@ -5,9 +5,6 @@ name: "Python: Integrate"
 on:
   push:
     branches: [ fix-python-ci-testing ]
-    paths:
-      - python/**
-      - proto/**
 
 jobs:
   linuxPython39:
