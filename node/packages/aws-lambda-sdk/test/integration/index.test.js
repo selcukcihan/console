@@ -355,6 +355,21 @@ describe('integration', function () {
     }),
   };
 
+  const nodePathMutatedConfiguration = {
+    configuration: {
+      Environment: {
+        Variables: {
+          AWS_LAMBDA_EXEC_WRAPPER: '/opt/sls-sdk-node/exec-wrapper.sh',
+          SLS_ORG_ID: process.env.SLS_ORG_ID,
+          NODE_PATH: './:/opt/:/opt/node_modules:/opt/middleware/node_modules',
+        },
+      },
+    },
+    deferredConfiguration: () => ({
+      Layers: [coreConfig.layerInternalArn],
+    }),
+  };
+
   const resolveExpressInvoke = ({ pathname }, retryCount = 0) =>
     async function self(testConfig) {
       const startTime = process.hrtime.bigint();
@@ -624,12 +639,31 @@ describe('integration', function () {
       },
     ],
     [
+      'mjs-callback',
+      {
+        variants: new Map([
+          ['v14', { configuration: { Runtime: 'nodejs14.x' } }],
+          ['v16', { configuration: { Runtime: 'nodejs16.x' } }],
+          ['v18', { configuration: { Runtime: 'nodejs18.x' } }],
+        ]),
+      },
+    ],
+    [
       'callback',
       {
         variants: new Map([
           ['v14', { configuration: { Runtime: 'nodejs14.x' } }],
           ['v16', { configuration: { Runtime: 'nodejs16.x' } }],
           ['v18', { configuration: { Runtime: 'nodejs18.x' } }],
+          [
+            'mutated-node-path-v16',
+            {
+              configuration: {
+                ...nodePathMutatedConfiguration.configuration,
+                Runtime: 'nodejs16.x',
+              },
+            },
+          ],
           [
             'sampled',
             {
@@ -2287,6 +2321,13 @@ describe('integration', function () {
       'esm-sdk/index',
       {
         // ESM import from modules referenced in NODE_PATH is supported only in nodejs18.x+
+        variants: new Map([['v18', { configuration: { Runtime: 'nodejs18.x' } }]]),
+        config: sdkTestConfig,
+      },
+    ],
+    [
+      'mjs-sdk',
+      {
         variants: new Map([['v18', { configuration: { Runtime: 'nodejs18.x' } }]]),
         config: sdkTestConfig,
       },

@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.8](https://github.com/serverless/console/compare/@serverless/aws-lambda-sdk@0.15.7...@serverless/aws-lambda-sdk@0.15.8) (2023-06-23)
+
+### Bug Fixes
+
+- Fix handling of request truncation ([ca7d46b](https://github.com/serverless/console/commit/ca7d46b35cc38d4913bf1f42cb2f6906d2033b5f))
+
+### [0.15.7](https://github.com/serverless/console/compare/@serverless/aws-lambda-sdk@0.15.6...@serverless/aws-lambda-sdk@0.15.7) (2023-06-22)
+
+### Features
+
+- Do not sample infrequently invoked functions ([da93c42](https://github.com/serverless/console/commit/da93c426fe353f410b6f26c2118e2c16713af34a))
+- Increase sampling rate to 20% ([a3ca4a3](https://github.com/serverless/console/commit/a3ca4a3b8693cf5cb8362107a42a83109c9de330))
+
 ### [0.15.6](https://github.com/serverless/console/compare/@serverless/aws-lambda-sdk@0.15.5...@serverless/aws-lambda-sdk@0.15.6) (2023-06-15)
 
 ### Features

@@ -1,15 +1,22 @@
 from __future__ import annotations
-import time
-import contextvars
-import contextlib
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
+
+import sls_sdk
+
+from ..imports import internally_imported
+
+with internally_imported():
+    import time
+    import contextvars
+    import contextlib
+    from urllib.parse import urlparse
+    from urllib.parse import parse_qs
+    import io
+    from typing import Iterable
+
 from ..error import report as report_error
 from .import_hook import ImportHook
-import sls_sdk
 from .wrapper import replace_method
-import io
-from typing import Iterable
+
 
 SDK = sls_sdk.serverlessSdk
 _IGNORE_FOLLOWING_REQUEST = contextvars.ContextVar("ignore", default=False)
@@ -94,6 +101,11 @@ class BaseInstrumenter:
             return
 
         decoded = _decode_body(body)
+        # TODO: Temporary handling of `decoded` being `None` case
+        # Ideally we should invetsigate why `decoded` is `None`
+        # and ensure we handle it properly
+        if not decoded:
+            return
         length = len(decoded)
 
         if length > SDK._maximum_body_byte_length:
@@ -116,7 +128,9 @@ class NativeAIOHTTPInstrumenter(BaseInstrumenter):
 
     async def _capture_response_body(self, trace_span, response):
         # response is a aiohttp.ClientResponse object
-        if not self.should_monitor_request_response:
+        if not self.should_monitor_request_response or not hasattr(
+            response.content, "unread_data"
+        ):
             return
         if (
             response.content_length
@@ -130,6 +144,7 @@ class NativeAIOHTTPInstrumenter(BaseInstrumenter):
             return
         try:
             response_body = await response.read()
+            response.content.unread_data(response_body)
             if response_body:
                 trace_span.output = _decode_body(response_body)
         except Exception as ex:
@@ -397,7 +412,6 @@ class URLLib3Instrumenter(BaseInstrumenter):
 
                 trace_span.tags["http.status_code"] = response.status
                 self._capture_response_body(trace_span, response)
-
                 return response
         except Exception as ex:
             trace_span.tags["http.error_code"] = ex.__class__.__name__
@@ -409,7 +423,7 @@ class URLLib3Instrumenter(BaseInstrumenter):
     def _capture_response_body(self, trace_span, response):
         if not self.should_monitor_request_response:
             return
-        response_body = response.data
+
         response_length = int(response.headers.get("Content-Length", 0))
         if response_length > SDK._maximum_body_byte_length:
             SDK._report_notice(
@@ -418,8 +432,22 @@ class URLLib3Instrumenter(BaseInstrumenter):
                 trace_span,
             )
             return
+
+        response_body = None
+        # if data is peekable, use it instead of the response.data
+        # this makes sure the response body is not consumed when
+        # instrumenting http requests through "requests" library.
+        if (
+            hasattr(response, "_original_response")
+            and hasattr(response._original_response, "peek")
+            and callable(response._original_response.peek)
+        ):
+            response_body = response._original_response.peek()
+            length = len(response_body)
+            if length == 0 and length != response_length:
+                response_body = response.data
         try:
-            if response_body:
+            if response_body is not None:
                 trace_span.output = _decode_body(response_body)
         except Exception as ex:
             report_error(ex)
