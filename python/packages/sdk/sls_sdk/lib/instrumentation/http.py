@@ -1,15 +1,22 @@
 from __future__ import annotations
-import time
-import contextvars
-import contextlib
-from urllib.parse import urlparse
-from urllib.parse import parse_qs
+
+import sls_sdk
+
+from ..imports import internally_imported
+
+with internally_imported():
+    import time
+    import contextvars
+    import contextlib
+    from urllib.parse import urlparse
+    from urllib.parse import parse_qs
+    import io
+    from typing import Iterable
+
 from ..error import report as report_error
 from .import_hook import ImportHook
-import sls_sdk
 from .wrapper import replace_method
-import io
-from typing import Iterable
+
 
 SDK = sls_sdk.serverlessSdk
 _IGNORE_FOLLOWING_REQUEST = contextvars.ContextVar("ignore", default=False)
@@ -94,6 +101,11 @@ class BaseInstrumenter:
             return
 
         decoded = _decode_body(body)
+        # TODO: Temporary handling of `decoded` being `None` case
+        # Ideally we should invetsigate why `decoded` is `None`
+        # and ensure we handle it properly
+        if not decoded:
+            return
         length = len(decoded)
 
         if length > SDK._maximum_body_byte_length:
@@ -116,7 +128,9 @@ class NativeAIOHTTPInstrumenter(BaseInstrumenter):
 
     async def _capture_response_body(self, trace_span, response):
         # response is a aiohttp.ClientResponse object
-        if not self.should_monitor_request_response:
+        if not self.should_monitor_request_response or not hasattr(
+            response.content, "unread_data"
+        ):
             return
         if (
             response.content_length
@@ -130,6 +144,7 @@ class NativeAIOHTTPInstrumenter(BaseInstrumenter):
             return
         try:
             response_body = await response.read()
+            response.content.unread_data(response_body)
             if response_body:
                 trace_span.output = _decode_body(response_body)
         except Exception as ex:
