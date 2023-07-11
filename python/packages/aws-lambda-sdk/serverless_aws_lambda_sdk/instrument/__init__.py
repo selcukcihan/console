@@ -44,15 +44,6 @@ CORE_TRACE_SPAN_NAMES = [
 ]
 
 
-MAX_LOG_LINE_LENGTH = 256 * 1024
-
-CORE_TRACE_SPAN_NAMES = [
-    "aws.lambda",
-    "aws.lambda.initialization",
-    "aws.lambda.invocation",
-]
-
-
 def debug_log(msg):
     if serverlessSdk._is_debug_mode:
         print(f"⚡ SDK: {msg}", file=sys.stderr)
